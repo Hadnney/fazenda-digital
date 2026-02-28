@@ -1,0 +1,124 @@
+﻿database.py:10:1: E402 module level import not at top of file
+database.py:12:1: E302 expected 2 blank lines, found 1
+database.py:20:1: E302 expected 2 blank lines, found 1
+init_db.py:2:1: F401 'models.Event' imported but unused
+init_db.py:5:1: E302 expected 2 blank lines, found 1
+init_db.py:7:1: W293 blank line contains whitespace
+init_db.py:9:1: W293 blank line contains whitespace
+init_db.py:18:80: E501 line too long (126 > 79 characters)
+init_db.py:19:80: E501 line too long (126 > 79 characters)
+init_db.py:20:80: E501 line too long (133 > 79 characters)
+init_db.py:23:1: W293 blank line contains whitespace
+init_db.py:26:80: E501 line too long (158 > 79 characters)
+init_db.py:27:80: E501 line too long (157 > 79 characters)
+init_db.py:28:80: E501 line too long (157 > 79 characters)
+init_db.py:31:1: W293 blank line contains whitespace
+init_db.py:34:80: E501 line too long (145 > 79 characters)
+init_db.py:35:80: E501 line too long (153 > 79 characters)
+init_db.py:41:80: E501 line too long (124 > 79 characters)
+init_db.py:42:80: E501 line too long (143 > 79 characters)
+init_db.py:50:1: E305 expected 2 blank lines after class or function definition, found 1
+main.py:4:1: F401 'database.get_db' imported but unused
+main.py:5:1: F401 'models.Event' imported but unused
+main.py:6:1: F401 'datetime' imported but unused
+main.py:24:19: E261 at least two spaces before inline comment
+main.py:28:80: E501 line too long (81 > 79 characters)
+main.py:34:80: E501 line too long (81 > 79 characters)
+main.py:48:1: W293 blank line contains whitespace
+main.py:51:80: E501 line too long (83 > 79 characters)
+main.py:62:1: W293 blank line contains whitespace
+main.py:66:80: E501 line too long (87 > 79 characters)
+models.py:1:1: F401 'sqlalchemy.Boolean' imported but unused
+models.py:1:80: E501 line too long (96 > 79 characters)
+models.py:6:1: E302 expected 2 blank lines, found 1
+models.py:8:1: W293 blank line contains whitespace
+models.py:16:28: E261 at least two spaces before inline comment
+models.py:18:1: W293 blank line contains whitespace
+models.py:22:1: E302 expected 2 blank lines, found 1
+models.py:24:1: W293 blank line contains whitespace
+models.py:27:25: E261 at least two spaces before inline comment
+models.py:28:31: E261 at least two spaces before inline comment
+models.py:29:28: E261 at least two spaces before inline comment
+models.py:31:1: W293 blank line contains whitespace
+models.py:35:1: E302 expected 2 blank lines, found 1
+models.py:37:1: W293 blank line contains whitespace
+models.py:41:32: E261 at least two spaces before inline comment
+models.py:42:41: E261 at least two spaces before inline comment
+models.py:44:1: W293 blank line contains whitespace
+models.py:47:1: E302 expected 2 blank lines, found 1
+models.py:49:1: W293 blank line contains whitespace
+models.py:52:30: E261 at least two spaces before inline comment
+models.py:58:1: E302 expected 2 blank lines, found 1
+models.py:60:1: W293 blank line contains whitespace
+models.py:64:32: E261 at least two spaces before inline comment
+models.py:67:1: W293 blank line contains whitespace
+models.py:70:1: E302 expected 2 blank lines, found 1
+models.py:76:28: E261 at least two spaces before inline comment
+pages\1_Task_Board.py:8:1: E402 module level import not at top of file
+pages\1_Task_Board.py:9:1: E402 module level import not at top of file
+pages\1_Task_Board.py:10:1: E402 module level import not at top of file
+pages\1_Task_Board.py:12:80: E501 line too long (80 > 79 characters)
+pages\1_Task_Board.py:25:1: W293 blank line contains whitespace
+pages\1_Task_Board.py:28:80: E501 line too long (96 > 79 characters)
+pages\1_Task_Board.py:45:80: E501 line too long (82 > 79 characters)
+pages\2_Gestao_Rebanho.py:9:1: E402 module level import not at top of file
+pages\2_Gestao_Rebanho.py:10:1: E402 module level import not at top of file
+pages\2_Gestao_Rebanho.py:11:1: E402 module level import not at top of file
+pages\2_Gestao_Rebanho.py:13:80: E501 line too long (80 > 79 characters)
+pages\2_Gestao_Rebanho.py:17:80: E501 line too long (82 > 79 characters)
+pages\2_Gestao_Rebanho.py:27:80: E501 line too long (99 > 79 characters)
+pages\2_Gestao_Rebanho.py:28:80: E501 line too long (87 > 79 characters)
+pages\2_Gestao_Rebanho.py:30:80: E501 line too long (94 > 79 characters)
+pages\2_Gestao_Rebanho.py:34:80: E501 line too long (96 > 79 characters)
+pages\2_Gestao_Rebanho.py:38:80: E501 line too long (81 > 79 characters)
+pages\2_Gestao_Rebanho.py:41:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:57:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:66:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:75:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:77:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:91:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:94:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:98:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:105:80: E501 line too long (92 > 79 characters)
+pages\2_Gestao_Rebanho.py:106:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:108:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:114:1: W293 blank line contains whitespace
+pages\2_Gestao_Rebanho.py:116:80: E501 line too long (133 > 79 characters)
+pages\2_Gestao_Rebanho.py:117:80: E501 line too long (84 > 79 characters)
+pages\3_Mapa_Pasto.py:10:1: E402 module level import not at top of file
+pages\3_Mapa_Pasto.py:11:1: E402 module level import not at top of file
+pages\3_Mapa_Pasto.py:28:1: W293 blank line contains whitespace
+pages\3_Mapa_Pasto.py:32:1: W293 blank line contains whitespace
+pages\3_Mapa_Pasto.py:38:1: W293 blank line contains whitespace
+pages\3_Mapa_Pasto.py:40:24: W291 trailing whitespace
+pages\4_Manejo_Coleta.py:9:1: E402 module level import not at top of file
+pages\4_Manejo_Coleta.py:10:1: E402 module level import not at top of file
+pages\4_Manejo_Coleta.py:21:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:27:80: E501 line too long (101 > 79 characters)
+pages\4_Manejo_Coleta.py:31:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:33:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:35:80: E501 line too long (114 > 79 characters)
+pages\4_Manejo_Coleta.py:38:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:59:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:60:80: E501 line too long (80 > 79 characters)
+pages\4_Manejo_Coleta.py:61:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:62:80: E501 line too long (109 > 79 characters)
+pages\4_Manejo_Coleta.py:63:80: E501 line too long (104 > 79 characters)
+pages\4_Manejo_Coleta.py:64:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:68:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:70:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:75:80: E501 line too long (83 > 79 characters)
+pages\4_Manejo_Coleta.py:85:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:88:1: W293 blank line contains whitespace
+pages\4_Manejo_Coleta.py:91:80: E501 line too long (84 > 79 characters)
+pages\5_Inteligencia_Artificial.py:13:80: E501 line too long (98 > 79 characters)
+pages\5_Inteligencia_Artificial.py:22:1: W293 blank line contains whitespace
+pages\5_Inteligencia_Artificial.py:23:80: E501 line too long (101 > 79 characters)
+pages\5_Inteligencia_Artificial.py:27:1: W293 blank line contains whitespace
+pages\5_Inteligencia_Artificial.py:29:1: W293 blank line contains whitespace
+pages\5_Inteligencia_Artificial.py:31:80: E501 line too long (103 > 79 characters)
+pages\5_Inteligencia_Artificial.py:32:1: W293 blank line contains whitespace
+pages\5_Inteligencia_Artificial.py:34:1: W293 blank line contains whitespace
+pages\5_Inteligencia_Artificial.py:42:80: E501 line too long (197 > 79 characters)
+pages\6_Financeiro.py:16:80: E501 line too long (81 > 79 characters)
+pages\6_Financeiro.py:26:80: E501 line too long (99 > 79 characters)
