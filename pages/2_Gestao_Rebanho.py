@@ -229,7 +229,7 @@ with get_db_session() as db:
                 })
             
             df = pd.DataFrame(data)
-            st.dataframe(df, width="stretch")
+            st.dataframe(df)
             
             # Simple stats
             st.info(f"Total de Animais: {len(animals)}")

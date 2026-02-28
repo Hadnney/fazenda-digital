@@ -36,8 +36,8 @@ with col1:
         names='Categoria',
         title='Custos Operacionais deste Mês'
     )
-    st.plotly_chart(fig, width="stretch")
-
+    st.plotly_chart(fig, use_container_width=True)
+        
 with col2:
     st.subheader("Indicadores")
     st.metric("Custo Médio por Cabeça", "R$ 45,00/mês")
@@ -45,4 +45,4 @@ with col2:
     st.metric("Lucratividade Estimada", "22%")
 
 st.markdown("### Detalhamento")
-st.dataframe(df, width="stretch")
+st.dataframe(df, use_container_width=True)

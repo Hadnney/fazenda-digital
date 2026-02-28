@@ -57,7 +57,7 @@ with get_db_session() as db:
                 low_stock = sum(1 for i in items if i.quantity <= 0)
                 st.metric("Itens Sem Estoque", low_stock, delta_color="inverse")
                 
-            st.dataframe(df, width="stretch", hide_index=True)
+            st.dataframe(df, use_container_width=True, hide_index=True)
             
         else:
             st.warning("Nenhum produto cadastrado no estoque ainda.")
