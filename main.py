@@ -4,11 +4,15 @@ import plotly.express as px
 from database import get_db_session
 from models import Animal, Paddock, Task
 from auth import check_auth
+from init_db import init_db
+import os
+
+# Initialize database automatically on Streamlit Cloud if it doesn't exist
+if not os.path.exists("fazenda.db"):
+    init_db()
 
 # Verifica se o usuário está autenticado
 check_auth()
-
-
 
 st.set_page_config(
     page_title="Fazenda Digital - Gestão Inteligente",
