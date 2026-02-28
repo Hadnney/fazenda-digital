@@ -4,15 +4,15 @@ import plotly.express as px
 from database import get_db_session
 from models import Animal, Paddock, Task
 from auth import check_auth
-# Verifica se o usuário está autenticado
-check_auth()
-
 st.set_page_config(
     page_title="Fazenda Digital - Gestão Inteligente",
     page_icon="🐄",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# Verifica se o usuário está autenticado
+check_auth()
 
 st.title("📊 Dashboard Executivo")
 
