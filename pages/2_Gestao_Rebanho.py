@@ -152,7 +152,7 @@ with get_db_session() as db:
                 birth_date = st.date_input("Data de Nascimento", datetime.date.today())
             with col2:
                 # Coluna para os inputs com botão lado-a-lado
-                col_weight, col_w_btn = st.columns([5, 1])
+                col_weight, col_w_btn, col_w_clear = st.columns([5, 1, 1])
                 with col_weight:
                     initial_weight = st.number_input("Peso Inicial (kg)", min_value=0.0, step=0.1, value=float(st.session_state.scanned_weight))
                     if initial_weight != st.session_state.scanned_weight:
@@ -161,6 +161,11 @@ with get_db_session() as db:
                     st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
                     if st.button("📷", key="btn_camera_peso", help="Ler Peso pela Câmera", use_container_width=True):
                         st.session_state.show_weight_camera = not st.session_state.show_weight_camera
+                        st.rerun()
+                with col_w_clear:
+                    st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
+                    if st.button("❌", key="btn_clear_peso", help="Limpar Peso", use_container_width=True):
+                        st.session_state.scanned_weight = 0.0
                         st.rerun()
                 paddock_options = db.query(Paddock).all()
                 paddock_map = {p.name: p.id for p in paddock_options}
