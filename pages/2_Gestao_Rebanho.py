@@ -44,61 +44,35 @@ with get_db_session() as db:
                     try:
                         import cv2
                         import numpy as np
-                        import pytesseract
+                        import easyocr
                         import re
                         
-                        # Definir explicitamente o caminho do Tesseract para Windows se não estiver no PATH
-                        import platform
-                        import os
-                        if platform.system() == "Windows" and os.path.exists(r"C:\Program Files\Tesseract-OCR\tesseract.exe"):
-                            pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+                        # Usa EasyOCR apenas para os números da balança (mais resiliente com LEDs digitais)
+                        reader = easyocr.Reader(['en'], gpu=False)
                         
-                        file_bytes = np.asarray(bytearray(img_file_buffer_w.read()), dtype=np.uint8)
-                        image = cv2.imdecode(file_bytes, 1)
+                        # O EasyOCR lida muito bem com as telinhas sem precisar distorcer a imagem toda com cv2
+                        result = reader.readtext(image, allowlist="0123456789.,", detail=0)
                         
-                        # DEBUG: Salvar localmente a foto do peso
-                        cv2.imwrite("debug_camera_peso.png", image)
-                        st.info("ℹ️ Debug: Foto da balança salva em 'debug_camera_peso.png'.")
-                        
-                        # Melhor pré-processamento para displays 7-Segmentos LED/LCD 
-                        # Redimensionar consideravelmente para ajudar a detecção
-                        image_resized = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
-                        gray = cv2.cvtColor(image_resized, cv2.COLOR_BGR2GRAY)
-                        
-                        # Threshold adaptativo e Inversão: dígitos LED viram pretos com fundo branco para o Tesseract
-                        thresh_adapt = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 21, 5)
-                        
-                        # Morphological Closing para fechar os buracos dos LEDs (7 segmentos)
-                        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-                        closed = cv2.morphologyEx(thresh_adapt, cv2.MORPH_CLOSE, kernel)
-                        
-                        # DEBUG adicional: salva como o OpenCV processou a luminosidade da balança
-                        cv2.imwrite("debug_camera_peso_processada.png", closed)
-
-                        # OCR focado em dígitos
-                        custom_config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=0123456789.,'
-                        text = pytesseract.image_to_string(closed, config=custom_config)
-                        
-                        # Encontrar o primeiro número válido
-                        numbers = re.findall(r'\d+[.,]?\d*', text)
-                        if numbers:
-                            # Tratar vírgula e ponto
-                            weight_value = float(numbers[0].replace(',', '.'))
-                            st.session_state.scanned_weight = weight_value
-                            st.session_state.show_weight_camera = False
-                            st.rerun()
-                        else:
-                            st.warning("Nenhum peso detectado. Tente focar melhor no visor ou melhorar a iluminação.")
+                        if result:
+                            # EasyOCR retorna uma lista de strings encontradas
+                            text = " ".join(result)
                             
-                    except pytesseract.TesseractNotFoundError:
-                        import platform
-                        if platform.system() == "Windows":
-                            msg_install = "Instale o Tesseract OCR for Windows (https://github.com/UB-Mannheim/tesseract/wiki) e adicione-o ao PATH."
+                            # Encontrar o primeiro número válido com possível casa decimal
+                            numbers = re.findall(r'\d+[.,]?\d*', text)
+                            
+                            if numbers:
+                                # Tratar vírgula e ponto para float Python
+                                weight_value = float(numbers[0].replace(',', '.'))
+                                st.session_state.scanned_weight = weight_value
+                                st.session_state.show_weight_camera = False
+                                st.rerun()
+                            else:
+                                st.warning("Números não detectados na foto clara. Tente focar melhor no visor.")
                         else:
-                            msg_install = "Execute: sudo apt-get install tesseract-ocr"
-                        st.error(f"Engine do Tesseract não encontrada. {msg_install}")
+                            st.warning("Nenhum texto/peso detectado. Tente focar no visor da balança.")
+                            
                     except Exception as e:
-                        st.error(f"Erro ao processar imagem para peso: {e}")
+                        st.error(f"Erro ao processar imagem para peso com EasyOCR: {e}")
                 
                 if st.button("Cancelar Leitura de Peso"):
                     st.session_state.show_weight_camera = False
