@@ -50,6 +50,10 @@ with get_db_session() as db:
                         # Usa EasyOCR apenas para os números da balança (mais resiliente com LEDs digitais)
                         reader = easyocr.Reader(['en'], gpu=False)
                         
+                        # Extrai a imagem do buffer do Streamlit
+                        file_bytes_w = np.asarray(bytearray(img_file_buffer_w.read()), dtype=np.uint8)
+                        image = cv2.imdecode(file_bytes_w, 1)
+
                         # O EasyOCR lida muito bem com as telinhas sem precisar distorcer a imagem toda com cv2
                         result = reader.readtext(image, allowlist="0123456789.,", detail=0)
                         
