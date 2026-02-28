@@ -11,10 +11,10 @@ from database import get_db_session
 from models import Paddock
 from auth import check_auth
 
+st.set_page_config(page_title="Mapa da Fazenda", page_icon="🗺️", layout="wide")
+
 # Verifica se o usuário está autenticado
 check_auth()
-
-st.set_page_config(page_title="Mapa da Fazenda", page_icon="🗺️", layout="wide")
 
 st.title("🗺️ Mapa Visual da Fazenda")
 

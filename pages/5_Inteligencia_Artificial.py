@@ -8,10 +8,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # from langchain... (Imports would go here)
 from auth import check_auth
 
+st.set_page_config(page_title="IA e Agentes", page_icon="🤖", layout="wide")
+
 # Verifica se o usuário está autenticado
 check_auth()
-
-st.set_page_config(page_title="IA e Agentes", page_icon="🤖", layout="wide")
 
 st.title("🤖 Inteligência Artificial e Agentes")
 st.warning(

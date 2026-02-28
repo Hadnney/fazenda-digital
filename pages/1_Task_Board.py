@@ -10,10 +10,10 @@ from database import get_db_session
 from models import Task
 from auth import check_auth
 
+st.set_page_config(page_title="Quadro de Tarefas", page_icon="✅", layout="wide")
+
 # Verifica se o usuário está autenticado
 check_auth()
-
-st.set_page_config(page_title="Quadro de Tarefas", page_icon="✅", layout="wide")
 
 st.title("✅ Quadro de Tarefas de Campo")
 

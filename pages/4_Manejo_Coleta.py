@@ -10,10 +10,10 @@ from database import get_db_session
 from models import Score, Paddock, Event, Animal
 from auth import check_auth
 
+st.set_page_config(page_title="Manejo e Coleta", page_icon="📝", layout="wide")
+
 # Verifica se o usuário está autenticado
 check_auth()
-
-st.set_page_config(page_title="Manejo e Coleta", page_icon="📝", layout="wide")
 
 st.title("📝 Coleta de Dados e Manejo")
 

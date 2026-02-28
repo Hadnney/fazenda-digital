@@ -11,10 +11,10 @@ from database import get_db_session
 from models import Inventory
 from auth import check_auth
 
+st.set_page_config(page_title="Estoque", page_icon="📦", layout="wide")
+
 # Verifica se o usuário está autenticado
 check_auth()
-
-st.set_page_config(page_title="Estoque", page_icon="📦", layout="wide")
 
 st.title("📦 Gestão de Estoque Global")
 
