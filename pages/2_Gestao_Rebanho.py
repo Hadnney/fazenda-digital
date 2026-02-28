@@ -120,16 +120,27 @@ with get_db_session() as db:
                         cv2.imwrite("debug_camera.png", image)
                         st.info("ℹ️ Debug: Foto da câmera foi salva em 'debug_camera.png'.")
                         
+                        # 1. Tenta a imagem original
                         resultados = zxingcpp.read_barcodes(image)
                         
-                        if resultados:
-                            data = resultados[0].text
-                        else:
-                            # Tenta aumentar o contraste e ler novamente caso a luz não seja boa
+                        # 2. Tenta em escala de cinza + Equalização de Histograma (CLAHE para lidar com sombra/luz ruim)
+                        if not resultados:
                             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                            _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
-                            resultados_th = zxingcpp.read_barcodes(thresh)
-                            data = resultados_th[0].text if resultados_th else None
+                            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+                            gray_clahe = clahe.apply(gray)
+                            resultados = zxingcpp.read_barcodes(gray_clahe)
+
+                        # 3. Tenta thresholding automático para códigos desbotados
+                        if not resultados:
+                            _, thresh = cv2.threshold(gray_clahe, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+                            resultados = zxingcpp.read_barcodes(thresh)
+
+                        # 4. Tenta aumentar a imagem (útil se o celular mandar uma foto de resolução baixa no Streamlit)
+                        if not resultados:
+                            resized = cv2.resize(gray_clahe, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+                            resultados = zxingcpp.read_barcodes(resized)
+                        
+                        data = resultados[0].text if resultados else None
                         
                         if data:
                             st.session_state.scanned_rfid = data
