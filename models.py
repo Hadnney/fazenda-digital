@@ -6,6 +6,7 @@ import datetime
 
 class Animal(Base):
     __tablename__ = "animals"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     rfid = Column(String, unique=True, index=True, nullable=True)
@@ -23,6 +24,7 @@ class Animal(Base):
 
 class Paddock(Base):
     __tablename__ = "paddocks"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True)
@@ -37,6 +39,7 @@ class Paddock(Base):
 
 class Event(Base):
     __tablename__ = "events"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     animal_id = Column(Integer, ForeignKey("animals.id"))
@@ -50,6 +53,7 @@ class Event(Base):
 
 class Inventory(Base):
     __tablename__ = "inventory"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     item_name = Column(String)
@@ -62,6 +66,7 @@ class Inventory(Base):
 
 class Score(Base):
     __tablename__ = "scores"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     paddock_id = Column(Integer, ForeignKey("paddocks.id"), nullable=True)
@@ -75,6 +80,7 @@ class Score(Base):
 
 class Task(Base):
     __tablename__ = "tasks"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     description = Column(String)
