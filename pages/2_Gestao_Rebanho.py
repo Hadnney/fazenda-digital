@@ -18,7 +18,7 @@ check_auth()
 
 st.title("🐮 Gestão de Ciclo de Vida e Logística")
 
-tab1, tab2, tab3 = st.tabs(["Cadastro Animal", "Rebanho Atual", "Importar Dados"])
+tab1, tab2, tab3, tab4 = st.tabs(["Cadastro Animal", "Rebanho Atual", "Importar Dados", "📄 Documentos de Transporte"])
 
 with get_db_session() as db:
     # --- Tab 1: Cadastro Animal ---
@@ -30,6 +30,8 @@ with get_db_session() as db:
             st.session_state.scanned_rfid = ""
         if 'show_camera' not in st.session_state:
             st.session_state.show_camera = False
+        if 'show_ocr_camera' not in st.session_state:
+            st.session_state.show_ocr_camera = False
         if 'scanned_weight' not in st.session_state:
             st.session_state.scanned_weight = 0.0
         if 'show_weight_camera' not in st.session_state:
@@ -83,8 +85,8 @@ with get_db_session() as db:
                     st.rerun()
 
             if st.session_state.show_camera:
-                st.info("Aponte o QR Code para a câmera.")
-                img_file_buffer = st.camera_input("Scanner")
+                st.info("📷 Aponte o **QR Code / Código de Barras** da etiqueta para a câmera.")
+                img_file_buffer = st.camera_input("Scanner QR/Barras")
                 if img_file_buffer is not None:
                     try:
                         import cv2
@@ -94,14 +96,10 @@ with get_db_session() as db:
                         file_bytes = np.asarray(bytearray(img_file_buffer.read()), dtype=np.uint8)
                         image = cv2.imdecode(file_bytes, 1)
                         
-                        # DEBUG: Salvar localmente a foto para verificar o que o Streamlit enxerga
-                        cv2.imwrite("debug_camera.png", image)
-                        st.info("ℹ️ Debug: Foto da câmera foi salva em 'debug_camera.png'.")
-                        
                         # 1. Tenta a imagem original
                         resultados = zxingcpp.read_barcodes(image)
                         
-                        # 2. Tenta em escala de cinza + Equalização de Histograma (CLAHE para lidar com sombra/luz ruim)
+                        # 2. Tenta em escala de cinza + Equalização de Histograma (CLAHE)
                         if not resultados:
                             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                             clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
@@ -113,7 +111,7 @@ with get_db_session() as db:
                             _, thresh = cv2.threshold(gray_clahe, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
                             resultados = zxingcpp.read_barcodes(thresh)
 
-                        # 4. Tenta aumentar a imagem (útil se o celular mandar uma foto de resolução baixa no Streamlit)
+                        # 4. Tenta aumentar a imagem (útil se o celular mandar foto de baixa resolução)
                         if not resultados:
                             resized = cv2.resize(gray_clahe, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
                             resultados = zxingcpp.read_barcodes(resized)
@@ -129,26 +127,88 @@ with get_db_session() as db:
                     except Exception as e:
                         st.error(f"Erro ao processar imagem: {e}")
                 
-                if st.button("Cancelar Leitura"):
+                if st.button("Cancelar Leitura QR"):
                     st.session_state.show_camera = False
+                    st.rerun()
+
+            if st.session_state.show_ocr_camera:
+                st.info("🔢 Aponte a câmera para o **número impresso** na etiqueta/brinco.")
+                img_file_buffer_ocr = st.camera_input("Scanner Número Etiqueta")
+                if img_file_buffer_ocr is not None:
+                    try:
+                        import cv2
+                        import numpy as np
+                        import easyocr
+                        import re
+                        
+                        file_bytes_ocr = np.asarray(bytearray(img_file_buffer_ocr.read()), dtype=np.uint8)
+                        image_ocr = cv2.imdecode(file_bytes_ocr, 1)
+
+                        # Pré-processamento para melhorar leitura de números em etiquetas
+                        gray_ocr = cv2.cvtColor(image_ocr, cv2.COLOR_BGR2GRAY)
+                        # Aumento de contraste
+                        clahe_ocr = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+                        gray_ocr = clahe_ocr.apply(gray_ocr)
+                        # Upscale para facilitar o OCR
+                        gray_ocr = cv2.resize(gray_ocr, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+
+                        # Usa EasyOCR para ler o número da etiqueta
+                        reader_rfid = easyocr.Reader(['en'], gpu=False)
+                        resultado_ocr = reader_rfid.readtext(
+                            gray_ocr,
+                            allowlist="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-",
+                            detail=0,
+                            paragraph=False
+                        )
+                        
+                        if resultado_ocr:
+                            # Concatena os fragmentos e limpa espaços extras
+                            numero_etiqueta = "".join(resultado_ocr).strip().replace(" ", "")
+                            if numero_etiqueta:
+                                st.session_state.scanned_rfid = numero_etiqueta
+                                st.session_state.show_ocr_camera = False
+                                st.rerun()
+                            else:
+                                st.warning("Número não detectado. Aproxime mais a câmera do número na etiqueta.")
+                        else:
+                            st.warning("Nenhum número detectado. Tente com melhor iluminação e foco no número.")
+                            
+                    except Exception as e:
+                        st.error(f"Erro ao ler número da etiqueta: {e}")
+                
+                if st.button("Cancelar Leitura Número"):
+                    st.session_state.show_ocr_camera = False
                     st.rerun()
 
             col1, col2 = st.columns(2)
             with col1:
                 # Coluna para os inputs com botão lado-a-lado
-                col_rfid, col_btn = st.columns([5, 1])
+                col_rfid, col_btn_qr, col_btn_ocr = st.columns([5, 1, 1])
                 with col_rfid:
-                    rfid = st.text_input("RFID/Brinco Eletrônico", value=st.session_state.scanned_rfid)
+                    rfid = st.text_input("RFID/Brinco Eletrônico", value=st.session_state.scanned_rfid,
+                                        placeholder="Digite, leia QR Code (📷) ou número (🔢)")
                     # Atualiza o state caso o usuário digite algo manualmente
                     if rfid != st.session_state.scanned_rfid:
                         st.session_state.scanned_rfid = rfid
-                with col_btn:
+                with col_btn_qr:
                     st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
-                    if st.button("📷", help="Ler QR Code ou Código de Barras", use_container_width=True):
+                    if st.button("📷", key="btn_qr_rfid", help="Ler QR Code ou Código de Barras", use_container_width=True):
                         st.session_state.show_camera = not st.session_state.show_camera
+                        st.session_state.show_ocr_camera = False  # Fecha o outro modo
+                        st.rerun()
+                with col_btn_ocr:
+                    st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
+                    if st.button("🔢", key="btn_ocr_rfid", help="Ler Número Impresso na Etiqueta", use_container_width=True):
+                        st.session_state.show_ocr_camera = not st.session_state.show_ocr_camera
+                        st.session_state.show_camera = False  # Fecha o outro modo
                         st.rerun()
 
                 breed = st.selectbox("Raça", ["Nelore", "Angus", "Brahman", "Hereford", "Cruzado"])
+                fase_inicial = st.selectbox(
+                    "Fase Inicial",
+                    ["cria", "recria", "engorda"],
+                    format_func=lambda f: {"cria": "🐮 Cria", "recria": "🌱 Recria", "engorda": "🍽️ Engorda"}[f]
+                )
                 birth_date = st.date_input("Data de Nascimento", datetime.date.today())
             with col2:
                 # Coluna para os inputs com botão lado-a-lado
@@ -186,14 +246,16 @@ with get_db_session() as db:
                 else:
                     try:
                         new_animal = Animal(
-
                             rfid=rfid,
                             breed=breed,
                             birth_date=birth_date,
                             initial_weight=initial_weight,
                             current_weight=initial_weight,
                             paddock_id=paddock_map[selected_paddock],
-                            status=status
+                            status=status,
+                            fase=fase_inicial,
+                            data_fase=datetime.date.today(),
+                            peso_entrada_fase=initial_weight,
                         )
                         db.add(new_animal)
                         
@@ -223,10 +285,15 @@ with get_db_session() as db:
             data = []
             for a in animals:
                 paddock_name = a.paddock.name if a.paddock else "N/A"
+                fase_labels = {
+                    "cria": "🐮 Cria", "recria": "🌱 Recria",
+                    "engorda": "🍽️ Engorda", "venda": "💰 Venda"
+                }
                 data.append({
                     "ID": a.id,
                     "RFID": a.rfid,
                     "Raça": a.breed,
+                    "Fase": fase_labels.get(a.fase or "cria", a.fase or "cria"),
                     "Peso (kg)": a.current_weight,
                     "Piquete": paddock_name,
                     "Status": a.status,
@@ -243,24 +310,190 @@ with get_db_session() as db:
         else:
             st.warning("Nenhum animal cadastrado.")
 
-    # --- Tab 3: Importar Dados ---
-    with tab3:
-        st.header("Importação de Dispositivos (RFID/Balança)")
-        st.markdown("Carregue arquivos `.csv` gerados por bastões ou balanças eletrônicas.")
-        
-        uploaded_file = st.file_uploader("Escolha um arquivo CSV", type="csv")
-        
-        if uploaded_file is not None:
-            try:
-                df_import = pd.read_csv(uploaded_file)
-                st.write("Pré-visualização dos dados:")
-                st.dataframe(df_import.head())
-                
-                if st.button("Processar Importação"):
-                    st.metric(
-                        "Simulação: Dados importados com sucesso!",
-                        "(Lógica a implementar)"
+    # --- Tab 4: Documentos de Transporte ---
+    with tab4:
+        st.header("📄 Documentos de Transporte Animal")
+        st.markdown(
+            "Registre e arquive as fotos dos documentos obrigatórios para "
+            "movimentação de animais. Cada documento fica vinculado ao RFID do animal."
+        )
+
+        # --- Session state dos documentos ---
+        if 'doc_rfid' not in st.session_state:
+            st.session_state.doc_rfid = ""
+        if 'foto_gta' not in st.session_state:
+            st.session_state.foto_gta = None
+        if 'foto_caminhao' not in st.session_state:
+            st.session_state.foto_caminhao = None
+
+        # --- Seleção do animal ---
+        st.subheader("Animal / RFID")
+        animais_lista = db.query(Animal).all()
+        rfid_opcoes = {f"{a.rfid} — {a.breed} ({a.status})": a.rfid for a in animais_lista} if animais_lista else {}
+
+        col_sel, col_dig = st.columns([3, 2])
+        with col_sel:
+            if rfid_opcoes:
+                sel = st.selectbox(
+                    "Selecionar animal cadastrado",
+                    ["— selecione —"] + list(rfid_opcoes.keys())
+                )
+                if sel != "— selecione —":
+                    st.session_state.doc_rfid = rfid_opcoes[sel]
+            else:
+                st.warning("Nenhum animal cadastrado ainda.")
+        with col_dig:
+            rfid_doc = st.text_input(
+                "Ou digite o RFID manualmente",
+                value=st.session_state.doc_rfid,
+                placeholder="Ex: BR-001"
+            )
+            if rfid_doc != st.session_state.doc_rfid:
+                st.session_state.doc_rfid = rfid_doc
+
+        rfid_doc = st.session_state.doc_rfid
+
+        st.divider()
+
+        # --- Campos de foto ---
+        col_gta, col_cam = st.columns(2)
+
+        # ── Campo 1: GTA – Guia de Trânsito Animal ──
+        with col_gta:
+            st.subheader("🐄 GTA — Guia de Trânsito Animal")
+            st.caption(
+                "Fotografia do documento GTA emitido pelo órgão estadual de "
+                "defesa agropecuária. Obrigatório para todo transporte de bovinos."
+            )
+
+            metodo_gta = st.radio(
+                "Como deseja capturar?",
+                ["📷 Câmera", "📁 Upload de arquivo"],
+                key="metodo_gta",
+                horizontal=True
+            )
+
+            foto_gta_bytes = None
+
+            if metodo_gta == "📷 Câmera":
+                img_gta = st.camera_input("Fotografar GTA", key="cam_gta")
+                if img_gta is not None:
+                    foto_gta_bytes = img_gta.getvalue()
+                    st.session_state.foto_gta = foto_gta_bytes
+            else:
+                upload_gta = st.file_uploader(
+                    "Selecionar foto da GTA",
+                    type=["jpg", "jpeg", "png", "pdf"],
+                    key="upload_gta"
+                )
+                if upload_gta is not None:
+                    foto_gta_bytes = upload_gta.getvalue()
+                    st.session_state.foto_gta = foto_gta_bytes
+
+            # Preview e download
+            if st.session_state.foto_gta:
+                st.image(
+                    st.session_state.foto_gta,
+                    caption="✅ GTA capturada",
+                    use_container_width=True
+                )
+                st.download_button(
+                    "⬇️ Baixar foto da GTA",
+                    data=st.session_state.foto_gta,
+                    file_name=f"GTA_{rfid_doc or 'sem_rfid'}_{datetime.date.today()}.jpg",
+                    mime="image/jpeg",
+                    key="dl_gta"
+                )
+            else:
+                st.info("Nenhuma foto da GTA capturada ainda.")
+
+        # ── Campo 2: Guia do Caminhão de Transporte ──
+        with col_cam:
+            st.subheader("🚛 Guia do Caminhão de Transporte")
+            st.caption(
+                "Fotografia do documento de habilitação/registro do veículo "
+                "transportador. Inclua também o CIOT quando aplicável."
+            )
+
+            metodo_cam = st.radio(
+                "Como deseja capturar?",
+                ["📷 Câmera", "📁 Upload de arquivo"],
+                key="metodo_cam",
+                horizontal=True
+            )
+
+            foto_cam_bytes = None
+
+            if metodo_cam == "📷 Câmera":
+                img_cam = st.camera_input("Fotografar Guia do Caminhão", key="cam_caminhao")
+                if img_cam is not None:
+                    foto_cam_bytes = img_cam.getvalue()
+                    st.session_state.foto_caminhao = foto_cam_bytes
+            else:
+                upload_cam = st.file_uploader(
+                    "Selecionar foto do Guia do Caminhão",
+                    type=["jpg", "jpeg", "png", "pdf"],
+                    key="upload_cam"
+                )
+                if upload_cam is not None:
+                    foto_cam_bytes = upload_cam.getvalue()
+                    st.session_state.foto_caminhao = foto_cam_bytes
+
+            # Preview e download
+            if st.session_state.foto_caminhao:
+                st.image(
+                    st.session_state.foto_caminhao,
+                    caption="✅ Guia do Caminhão capturado",
+                    use_container_width=True
+                )
+                st.download_button(
+                    "⬇️ Baixar foto do Guia do Caminhão",
+                    data=st.session_state.foto_caminhao,
+                    file_name=f"GuiaCaminhao_{rfid_doc or 'sem_rfid'}_{datetime.date.today()}.jpg",
+                    mime="image/jpeg",
+                    key="dl_cam"
+                )
+            else:
+                st.info("Nenhuma foto do Guia do Caminhão capturada ainda.")
+
+        st.divider()
+
+        # --- Salvar documentos em disco ---
+        if st.button("💾 Salvar Documentos", type="primary", key="btn_salvar_docs"):
+            if not rfid_doc:
+                st.error("Informe o RFID do animal antes de salvar.")
+            elif not st.session_state.foto_gta and not st.session_state.foto_caminhao:
+                st.warning("Capture ao menos uma foto antes de salvar.")
+            else:
+                try:
+                    pasta = os.path.join(
+                        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "doc_transporte"
                     )
-                    # Here we would implement logic to match RFID and update weights
-            except Exception as e:
-                st.error(f"Erro ao ler arquivo: {e}")
+                    os.makedirs(pasta, exist_ok=True)
+
+                    salvos = []
+                    if st.session_state.foto_gta:
+                        nome_gta = f"GTA_{rfid_doc}_{datetime.date.today()}.jpg"
+                        with open(os.path.join(pasta, nome_gta), "wb") as f:
+                            f.write(st.session_state.foto_gta)
+                        salvos.append(f"GTA → `{nome_gta}`")
+
+                    if st.session_state.foto_caminhao:
+                        nome_cam = f"GuiaCaminhao_{rfid_doc}_{datetime.date.today()}.jpg"
+                        with open(os.path.join(pasta, nome_cam), "wb") as f:
+                            f.write(st.session_state.foto_caminhao)
+                        salvos.append(f"Guia do Caminhão → `{nome_cam}`")
+
+                    st.success(
+                        f"✅ Documentos salvos com sucesso na pasta `doc_transporte/`:\n\n"
+                        + "\n".join(f"- {s}" for s in salvos)
+                    )
+                    # Limpa o estado após salvar
+                    st.session_state.foto_gta = None
+                    st.session_state.foto_caminhao = None
+                    st.session_state.doc_rfid = ""
+
+                except Exception as e:
+                    st.error(f"Erro ao salvar documentos: {e}")
+

@@ -1,0 +1,21 @@
+{
+    "name": "Fazenda Digital Mobile",
+    "short_name": "FazendaMob",
+    "description": "Gestão Inteligente de Gado",
+    "start_url": "./fazenda_mobile.html",
+    "display": "standalone",
+    "background_color": "#F8FAFC",
+    "theme_color": "#2563EB",
+    "icons": [
+        {
+            "src": "https://ui-avatars.com/api/?name=FD&background=2563EB&color=fff&size=192",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://ui-avatars.com/api/?name=FD&background=2563EB&color=fff&size=512",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

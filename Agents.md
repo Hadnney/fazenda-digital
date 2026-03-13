@@ -1,0 +1,13 @@
+Atue como Designer Sênior de UX Mobile e Engenheiro de Frontend. Vamos construir um aplicativo de Automação de fazenda de gado  mobile-first chamado 'Gestao de fazenda de gado'. para ter as mesmas funcionalidades do Sistema fazenda digital
+
+1. Contexto e Usuário:
+
+O usuário é um profissional ocupado que precisa gerenciar uma fazenda de gado de corte rapidamente em seu smartphone. A experiência deve ser fluida, satisfatória e moderna. 2. Requisitos de Design Visual: ●      Mobile-First: O layout deve ser otimizado para telas verticais (iPhone/Android). ●      Estética: Utilize uma estética moderna e limpa com bastante espaço em branco (design estilo Apple). ●      Paleta de Cores: Utilize um fundo suave (cinza ardósia/branco-sujo) e uma cor de destaque primária 'Azul Elétrico' para elementos interativos. ●      Tipografia: Utilize uma fonte sans-serif limpa (Inter ou Roboto). 
+
+3. Requisitos Funcionais (MVP):o app module deverá ter as mesmas funcionalidades do aplicativo streamlit da fazenda digital 
+
+este APP deverá exportar todos os dados para uma planilha excel ao final do preenchimento das paginas 
+
+● Usar Tailwind CSS para todos os estilos (isso é imprescindível para estilização rápida). ● Usar ícones Phosphor ou Lucide para a iconografia (lixeira, marca de seleção). ● Inicializar com 3 tarefas fictícias para que eu possa visualizar o design imediatamente. Etapa 3: Analise o resultado. Pressione Enter e observe o painel de visualização. Em cerca de 20 a 30 segundos, você deverá ver a estrutura básica do seu aplicativo. Lista de verificação para revisão do diretor: Não prossiga até verificar estes pontos. Este é o seu momento de "Controle de Qualidade".
+
+● [ ] A largura é adequada para dispositivos móveis? Se parecer com um site para desktop, clique imediatamente no ícone "Visualização para dispositivos móveis" na barra de ferramentas de visualização. ● [ ] Os ícones estão visíveis? Às vezes, a IA esquece de vincular a biblioteca de ícones. Se você vir quadrados vazios em vez de lixeiras, informe: "Os ícones estão faltando. Corrija a importação da biblioteca." ● [ ] Está usando o Tailwind? Você não consegue ver isso visualmente, mas se o design parecer decente, provavelmente funcionou. Nesta fase, os botões podem não funcionar perfeitamente. O botão de excluir pode não fazer nada. Isso é normal. A Fase 1 trata da estrutura visual, não da lógica. Se parecer com o esqueleto de um bom aplicativo, prossiga.

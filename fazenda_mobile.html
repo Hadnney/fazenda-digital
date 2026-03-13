@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fazenda Digital - Mobile</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Fazenda Digital">
+    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=FD&background=2563EB&color=fff&size=180">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.21.0/package/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#2563EB', // Azul Elétrico
+                        surface: '#F8FAFC', // Branco-sujo/Cinza ardósia suave
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F8FAFC;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-active {
+            color: #2563EB;
+        }
+
+        .card {
+            transition: transform 0.2s;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="text-slate-900 overflow-x-hidden">
+
+    <!-- Bottom Navigation -->
+    <nav id="navbar" class="fixed bottom-0 left-0 right-0 glass border-t border-slate-200 z-50 safe-bottom">
+        <div class="flex justify-around items-center h-16">
+            <button onclick="showScreen('home')" class="nav-btn flex flex-col items-center gap-1 tab-active"
+                id="nav-home">
+                <i class="ph-fill ph-house-line text-2xl"></i>
+                <span class="text-[10px] font-medium">Início</span>
+            </button>
+            <button onclick="showScreen('rebanho')" class="nav-btn flex flex-col items-center gap-1 text-slate-400"
+                id="nav-rebanho">
+                <i class="ph-bold ph-cow text-2xl"></i>
+                <span class="text-[10px] font-medium">Rebanho</span>
+            </button>
+            <button onclick="showScreen('manejo')" class="nav-btn flex flex-col items-center gap-1 text-slate-400"
+                id="nav-manejo">
+                <i class="ph-bold ph-needle text-2xl"></i>
+                <span class="text-[10px] font-medium">Manejo</span>
+            </button>
+            <button onclick="showScreen('estoque')" class="nav-btn flex flex-col items-center gap-1 text-slate-400"
+                id="nav-estoque">
+                <i class="ph-bold ph-package text-2xl"></i>
+                <span class="text-[10px] font-medium">Estoque</span>
+            </button>
+            <button onclick="showScreen('mais')" class="nav-btn flex flex-col items-center gap-1 text-slate-400"
+                id="nav-mais">
+                <i class="ph-bold ph-dots-three-outline-vertical text-2xl"></i>
+                <span class="text-[10px] font-medium">Mais</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header id="app-header"
+        class="sticky top-0 z-40 px-6 py-4 flex justify-between items-center glass border-b border-slate-100">
+        <h1 id="screen-title" class="text-xl font-bold tracking-tight">Dashboard</h1>
+        <div class="flex items-center gap-3">
+            <button onclick="exportToExcel()"
+                class="w-10 h-10 rounded-full bg-blue-50 text-primary flex items-center justify-center">
+                <i class="ph-bold ph-file-xls text-xl"></i>
+            </button>
+            <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                <img src="https://ui-avatars.com/api/?name=Fazenda+Digital&background=2563EB&color=fff" alt="Perfil">
+            </div>
+        </div>
+    </header>
+
+    <main class="px-6 pt-4 pb-24">
+
+        <!-- Screen: Dashboard -->
+        <div id="screen-home" class="screen active space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
+                    <i class="ph-bold ph-users text-primary text-xl"></i>
+                    <p class="text-xs font-medium text-slate-500 uppercase">Total Animais</p>
+                    <p class="text-2xl font-bold" id="dash-total">...</p>
+                </div>
+                <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-2">
+                    <i class="ph-bold ph-chart-line-up text-green-500 text-xl"></i>
+                    <p class="text-xs font-medium text-slate-500 uppercase">GMD Médio</p>
+                    <p class="text-2xl font-bold">0,85 kg</p>
+                </div>
+            </div>
+
+            <section class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="font-bold text-lg">Tarefas Prioritárias</h2>
+                    <button class="text-primary text-sm font-medium">Ver todas</button>
+                </div>
+                <div id="tasks-container" class="space-y-3">
+                    <!-- Fictitious tasks will be here -->
+                </div>
+            </section>
+
+            <section class="space-y-3">
+                <h2 class="font-bold text-lg">Alertas Recentes</h2>
+                <div class="bg-amber-50 border border-amber-100 p-4 rounded-2xl flex gap-3">
+                    <i class="ph-bold ph-warning text-amber-500 text-xl"></i>
+                    <p class="text-sm text-amber-800">Piquete 2 com escore de pasto baixo (3.0)</p>
+                </div>
+                <div class="bg-red-50 border border-red-100 p-4 rounded-2xl flex gap-3">
+                    <i class="ph-bold ph-virus text-red-500 text-xl"></i>
+                    <p class="text-sm text-red-800">Atenção: Vacinação Aftosa expira em 5 dias</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Screen: Rebanho -->
+        <div id="screen-rebanho" class="screen space-y-4">
+            <div class="flex gap-2 overflow-x-auto pb-2">
+                <button
+                    class="px-4 py-2 bg-primary text-white rounded-full text-sm font-medium whitespace-nowrap">Todos</button>
+                <button
+                    class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full text-sm font-medium whitespace-nowrap">Cria</button>
+                <button
+                    class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full text-sm font-medium whitespace-nowrap">Recria</button>
+                <button
+                    class="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-full text-sm font-medium whitespace-nowrap">Engorda</button>
+            </div>
+
+            <div id="rebanho-list" class="space-y-3">
+                <!-- Animal list -->
+            </div>
+
+            <button onclick="openModal('modal-add-animal')"
+                class="fixed right-6 bottom-24 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-blue-200 flex items-center justify-center z-10 transition-transform active:scale-90">
+                <i class="ph-bold ph-plus text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Screen: Manejo -->
+        <div id="screen-manejo" class="screen space-y-6">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-4">
+                <h3 class="font-bold flex items-center gap-2">
+                    <i class="ph-bold ph-barcode text-primary"></i>
+                    Coleta Rápida
+                </h3>
+                <div class="space-y-3">
+                    <button
+                        class="w-full py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 font-medium flex items-center justify-center gap-3">
+                        <i class="ph-bold ph-qr-code text-xl"></i>
+                        Scanner de QR Code
+                    </button>
+                    <input type="text" placeholder="Ou digite o RFID manualmente"
+                        class="w-full py-4 px-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-primary">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button
+                    class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center gap-2 card">
+                    <div class="w-12 h-12 bg-blue-50 text-primary rounded-2xl flex items-center justify-center">
+                        <i class="ph-bold ph-scales text-2xl"></i>
+                    </div>
+                    <span class="text-sm font-bold">Pesagem</span>
+                </button>
+                <button
+                    class="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center gap-2 card">
+                    <div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center">
+                        <i class="ph-bold ph-syringe text-2xl"></i>
+                    </div>
+                    <span class="text-sm font-bold">Vacinação</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen: Estoque -->
+        <div id="screen-estoque" class="screen space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="font-bold text-lg">Insumos Críticos</h2>
+                <i class="ph ph-funnel text-slate-500"></i>
+            </div>
+            <div id="estoque-list" class="space-y-3">
+                <!-- Inventory list -->
+            </div>
+        </div>
+
+        <!-- Screen: Mais -->
+        <div id="screen-mais" class="screen space-y-4">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                <button onclick="showScreen('ciclo')"
+                    class="w-full px-6 py-4 flex justify-between items-center active:bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-bold ph-arrows-clockwise text-indigo-500 text-xl"></i>
+                        <span class="font-medium text-slate-700">Ciclo de Produção</span>
+                    </div>
+                    <i class="ph ph-caret-right text-slate-300"></i>
+                </button>
+                <div class="h-px bg-slate-50 mx-6"></div>
+                <button class="w-full px-6 py-4 flex justify-between items-center active:bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-bold ph-truck text-amber-500 text-xl"></i>
+                        <span class="font-medium text-slate-700">Documentos de Transporte</span>
+                    </div>
+                    <i class="ph ph-caret-right text-slate-300"></i>
+                </button>
+                <div class="h-px bg-slate-50 mx-6"></div>
+                <button class="w-full px-6 py-4 flex justify-between items-center active:bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-bold ph-money text-green-500 text-xl"></i>
+                        <span class="font-medium text-slate-700">Financeiro</span>
+                    </div>
+                    <i class="ph ph-caret-right text-slate-300"></i>
+                </button>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                <button class="w-full px-6 py-4 flex justify-between items-center active:bg-slate-50 text-red-500">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-bold ph-sign-out text-xl"></i>
+                        <span class="font-medium">Sair do Aplicativo</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Extra Screen: Ciclo de Produção -->
+        <div id="screen-ciclo" class="screen space-y-6">
+            <div class="relative pt-6">
+                <!-- Vertical Timeline for Cycles -->
+                <div class="absolute left-8 top-12 bottom-12 w-1 bg-slate-100 rounded-full"></div>
+
+                <div class="relative flex gap-6 items-start pb-8">
+                    <div
+                        class="w-16 h-16 bg-green-500 text-white rounded-2xl flex items-center justify-center z-10 shrink-0 shadow-lg shadow-green-100">
+                        <i class="ph-bold ph-baby text-2xl"></i>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex-1">
+                        <h4 class="font-bold">Cria</h4>
+                        <p class="text-xs text-slate-500">Fase inicial de nascimento e desmama</p>
+                        <div class="mt-2 flex justify-between items-end">
+                            <span class="text-2xl font-bold">120</span>
+                            <span class="text-[10px] text-green-600 font-bold uppercase tracking-wider">Expandir</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative flex gap-6 items-start pb-8">
+                    <div
+                        class="w-16 h-16 bg-blue-500 text-white rounded-2xl flex items-center justify-center z-10 shrink-0 shadow-lg shadow-blue-100">
+                        <i class="ph-bold ph-plant text-2xl"></i>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex-1">
+                        <h4 class="font-bold">Recria</h4>
+                        <p class="text-xs text-slate-500">Ganho de estrutura corporal</p>
+                        <div class="mt-2 flex justify-between items-end">
+                            <span class="text-2xl font-bold">85</span>
+                            <span class="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Expandir</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative flex gap-6 items-start">
+                    <div
+                        class="w-16 h-16 bg-orange-500 text-white rounded-2xl flex items-center justify-center z-10 shrink-0 shadow-lg shadow-orange-100">
+                        <i class="ph-bold ph-knife text-2xl"></i>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex-1">
+                        <h4 class="font-bold">Engorda</h4>
+                        <p class="text-xs text-slate-500">Acabamento e ganho de peso final</p>
+                        <div class="mt-2 flex justify-between items-end">
+                            <span class="text-2xl font-bold">42</span>
+                            <span class="text-[10px] text-orange-600 font-bold uppercase tracking-wider">Expandir</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="showScreen('home')"
+                class="w-full py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl">Voltar ao Início</button>
+        </div>
+
+    </main>
+
+    <!-- Modal Section -->
+    <div id="modal-container" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] hidden flex items-end">
+        <div id="modal-content"
+            class="w-full bg-white rounded-t-[40px] p-8 space-y-6 transform translate-y-full transition-transform duration-300 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 id="modal-title" class="text-xl font-bold">Título</h3>
+                <button onclick="closeModal()"
+                    class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold">✕</button>
+            </div>
+            <div id="modal-body">
+                <!-- Dynamic body -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Structures
+        const db = {
+            animals: [
+                { id: 1042, rfid: 'BR-9821', breed: 'Nelore', weight: '450kg', phase: 'Engorda', status: 'active', color: 'orange' },
+                { id: 1043, rfid: 'BR-9822', breed: 'Nelore', weight: '420kg', phase: 'Engorda', status: 'active', color: 'orange' },
+                { id: 1044, rfid: 'BR-7710', breed: 'Angus', weight: '380kg', phase: 'Recria', status: 'active', color: 'blue' },
+                { id: 1045, rfid: 'BR-4420', breed: 'Nelore', weight: '180kg', phase: 'Cria', status: 'active', color: 'green' },
+            ],
+            tasks: [
+                { id: 1, title: 'Vacinar Lote 04 Piquete 1', priority: 'High', date: 'Hoje', status: 'todo' },
+                { id: 2, title: 'Reposição de Sal Mineral - Curral B', priority: 'Medium', date: 'Hoje', status: 'todo' },
+                { id: 3, title: 'Vistoria Piquete 5 (Cerca)', priority: 'Low', date: 'Amanhã', status: 'todo' },
+            ],
+            inventory: [
+                { id: 1, name: 'Sal Mineral 80', qty: '45 sacos', status: 'good' },
+                { id: 2, name: 'Ivermectina 1%', qty: '5 frascos', status: 'low' },
+                { id: 3, name: 'Ração Creep Feeding', qty: '12 sacos', status: 'good' },
+            ]
+        };
+
+        const titles = {
+            'home': 'Dashboard',
+            'rebanho': 'Gestão de Rebanho',
+            'manejo': 'Manejo e Coleta',
+            'estoque': 'Gestão de Estoque',
+            'mais': 'Configurações',
+            'ciclo': 'Ciclo Produtivo'
+        };
+
+        // Navigation Logic
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            // Deactivate nav icons
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('tab-active');
+                b.classList.add('text-slate-400');
+                const icon = b.querySelector('i');
+                icon.className = icon.className.replace('ph-fill', 'ph-bold');
+            });
+
+            // Show target
+            const target = document.getElementById('screen-' + screenId);
+            if (target) target.classList.add('active');
+
+            // Activate icon
+            const btn = document.getElementById('nav-' + screenId);
+            if (btn) {
+                btn.classList.add('tab-active');
+                btn.classList.remove('text-slate-400');
+                const icon = btn.querySelector('i');
+                icon.className = icon.className.replace('ph-bold', 'ph-fill');
+            }
+
+            // Update title
+            document.getElementById('screen-title').innerText = titles[screenId] || 'Fazenda Digital';
+
+            // Handle header visibility
+            const header = document.getElementById('app-header');
+            if (screenId === 'home' || screenId === 'mais') {
+                header.classList.remove('hidden');
+            } else {
+                // Keep it for now, can adjust
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Data
+        function renderAll() {
+            // Stats
+            document.getElementById('dash-total').innerText = db.animals.length;
+
+            // Tasks (Mock 3 tasks)
+            const taskContainer = document.getElementById('tasks-container');
+            taskContainer.innerHTML = db.tasks.map(t => `
+                <div class="bg-white p-4 rounded-2xl flex items-center justify-between shadow-sm border border-slate-50 transition-all active:bg-slate-50">
+                    <div class="flex items-center gap-4">
+                        <div class="w-1.5 h-10 rounded-full ${t.priority === 'High' ? 'bg-red-400' : t.priority === 'Medium' ? 'bg-orange-400' : 'bg-slate-300'}"></div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">${t.title}</p>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">${t.date} • ${t.priority}</p>
+                        </div>
+                    </div>
+                    <i class="ph ph-circle text-slate-300 text-xl"></i>
+                </div>
+            `).join('');
+
+            // Rebanho
+            const rebanhoList = document.getElementById('rebanho-list');
+            rebanhoList.innerHTML = db.animals.map(a => `
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-50 flex justify-between items-center card">
+                    <div class="flex gap-4 items-center">
+                        <div class="w-12 h-12 bg-${a.color}-100 text-${a.color}-600 rounded-2xl flex items-center justify-center">
+                            <i class="ph-bold ph-cow text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">RFID: ${a.rfid}</h4>
+                            <p class="text-xs text-slate-500">${a.breed} • ${a.phase}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold">${a.weight}</p>
+                        <span class="text-[10px] text-green-500 font-bold uppercase tracking-wider">Ativo</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Inventory
+            const inventoryList = document.getElementById('estoque-list');
+            inventoryList.innerHTML = db.inventory.map(i => `
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-50 flex justify-between items-center card">
+                    <div class="flex gap-4 items-center">
+                        <div class="w-12 h-12 ${i.status === 'low' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-primary'} rounded-2xl flex items-center justify-center">
+                            <i class="ph-bold ph-package text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">${i.name}</h4>
+                            <p class="text-xs text-slate-500 uppercase tracking-widest font-bold">${i.qty}</p>
+                        </div>
+                    </div>
+                    ${i.status === 'low' ? '<span class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">BAIXO</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        // Modal Logic
+        function openModal(id) {
+            const container = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            container.classList.remove('hidden');
+
+            setTimeout(() => {
+                content.classList.remove('translate-y-full');
+            }, 10);
+
+            if (id === 'modal-add-animal') {
+                document.getElementById('modal-title').innerText = 'Novo Animal';
+                document.getElementById('modal-body').innerHTML = `
+                    <div class="space-y-4 pb-8">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">RFID / Brinco</label>
+                            <input type="text" placeholder="Ex: BR-0000" class="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-primary/20 outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">Raça</label>
+                                <select class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none">
+                                    <option>Nelore</option>
+                                    <option>Angus</option>
+                                    <option>Brahman</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">Peso Inicial</label>
+                                <input type="number" placeholder="kg" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none">
+                            </div>
+                        </div>
+                        <button onclick="closeModal()" class="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-blue-100 mt-4">Salvar Cadastro</button>
+                    </div>
+                `;
+            }
+        }
+
+        function closeModal() {
+            const container = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            content.classList.add('translate-y-full');
+            setTimeout(() => {
+                container.classList.add('hidden');
+            }, 300);
+        }
+
+        // Export logic
+        function exportToExcel() {
+            const wb = XLSX.utils.book_new();
+
+            // Sheet 1: Animals
+            const wsAnimals = XLSX.utils.json_to_sheet(db.animals);
+            XLSX.utils.book_append_sheet(wb, wsAnimals, "Rebanho");
+
+            // Sheet 2: Inventory
+            const wsInv = XLSX.utils.json_to_sheet(db.inventory);
+            XLSX.utils.book_append_sheet(wb, wsInv, "Estoque");
+
+            // Sheet 3: Tasks
+            const wsTasks = XLSX.utils.json_to_sheet(db.tasks);
+            XLSX.utils.book_append_sheet(wb, wsTasks, "Tarefas");
+
+            XLSX.writeFile(wb, "Fazenda_Digital_Relatorio.xlsx");
+
+            // Subtle toast
+            alert('Relatório gerado e exportado com sucesso!');
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAll();
+            showScreen('home');
+        });
+    </script>
+</body>
+
+</html>

@@ -17,6 +17,10 @@ class Animal(Base):
     current_weight = Column(Float)
     status = Column(String)  # active, sold, dead, quarantine
     paddock_id = Column(Integer, ForeignKey("paddocks.id"), nullable=True)
+    # Ciclo produtivo
+    fase = Column(String, default="cria")               # cria | recria | engorda | venda
+    data_fase = Column(Date, default=datetime.date.today)  # data de ent. na fase atual
+    peso_entrada_fase = Column(Float, nullable=True)    # peso no início da fase
 
     paddock = relationship("Paddock", back_populates="animals")
     events = relationship("Event", back_populates="animal")
